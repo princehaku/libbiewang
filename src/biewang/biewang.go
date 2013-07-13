@@ -3,19 +3,18 @@ package biewang
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
-var chinesnumber = []string{"零", "一", "二", "两", "三", "四", "五", "六", "七", "八", "九", "十", "百", "千", "万", "亿"}
-var alphanumber = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
-var stop_words_map = []string{
+var chinesnumber_arr = []string{"零", "一", "二", "两", "三", "四", "五", "六", "七", "八", "九", "十", "百", "千", "万", "亿"}
+var alphanumber_arr = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+
+var stop_words_arr = []string{
 	"个",
 	"的",
 	"小",
 }
-var mapping_times_memo = map[string]string{
-	"以前": "前",
-	"以后": "后",
-}
+var mapping_times_map = map[string]string{}
 var stop_times_map = map[string]string{
 	"大前天": "3天前",
 	"前天":  "2天前",
@@ -34,13 +33,12 @@ var stop_times_map = map[string]string{
 	"一刻":  "15",
 }
 
-func Str2Todo(msg string) {
-
-	fmt.Println(chinesnumber)
+func Str2Memo(str string) {
+	for _, w := range stop_words_arr {
+		str = strings.Replace(str, w, "", 1)
+	}
+	fmt.Println(str)
 	var validID = regexp.MustCompile(`^[a-z]+\[[0-9]+\]$`)
 
 	fmt.Println(validID.MatchString("adam[23]"))
-	fmt.Println(validID.MatchString("eve[7]"))
-	fmt.Println(validID.MatchString("Job[48]"))
-	fmt.Println(validID.MatchString("snakey"))
 }
