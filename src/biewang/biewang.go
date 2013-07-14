@@ -2,18 +2,15 @@ package biewang
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
-
-var chinesnumber_arr = []string{"零", "一", "二", "两", "三", "四", "五", "六", "七", "八", "九", "十", "百", "千", "万", "亿"}
-var alphanumber_arr = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
 
 var stop_words_arr = []string{
 	"个",
 	"的",
 	"小",
 }
+
 var mapping_times_map = map[string]string{}
 var stop_times_map = map[string]string{
 	"大前天": "3天前",
@@ -38,7 +35,5 @@ func Str2Memo(str string) {
 		str = strings.Replace(str, w, "", 1)
 	}
 	fmt.Println(str)
-	var validID = regexp.MustCompile(`^[a-z]+\[[0-9]+\]$`)
-
-	fmt.Println(validID.MatchString("adam[23]"))
+	fmt.Println(CnStr2Int("三亿九千八百一十七万二千一百五十四"))
 }
