@@ -7,7 +7,7 @@ import (
 )
 
 func TestMemo(t *testing.T) {
-	biewang.Str2Memo("明天的下午三点 去游戏")
+	biewang.Str2Memo("明天下午三点")
 }
 
 func TestCNumber2Int(t *testing.T) {
