@@ -28,33 +28,38 @@ func pos(arr []string, s string) int {
 	}
 	return -1
 }
-type MapSorter []Item
-                 
+
+type SortedList []Item
+
 type Item struct {
-    Key string
-    Val int
+	Key string
+	Val int
 }
-                 
-func ReMapSorter(m map[string]int) MapSorter {
-    ms := make(MapSorter, 0, len(m))
-                 
-    for k, v := range m {
-        ms = append(ms, Item{k, v})
-    }
-                 
-    return ms
+
+func SortMap(m map[string]int) map[string]int {
+	ms := make(SortedList, 0, len(m))
+
+	for k, v := range m {
+		ms = append(ms, Item{k, v})
+	}
+	sort.Sort(ms)
+	mx := map[string]int{}
+	for _, i := range ms {
+		mx[i.Key] = i.Val
+	}
+	return mx
 }
-                 
-func (ms MapSorter) Len() int {
-    return len(ms)
+
+func (ms SortedList) Len() int {
+	return len(ms)
 }
-                 
-func (ms MapSorter) Less(i, j int) bool {
-    return ms[i].Val > ms[j].Val
+
+func (ms SortedList) Less(i, j int) bool {
+	return ms[i].Val > ms[j].Val
 }
-                 
-func (ms MapSorter) Swap(i, j int) {
-    ms[i], ms[j] = ms[j], ms[i]
+
+func (ms SortedList) Swap(i, j int) {
+	ms[i], ms[j] = ms[j], ms[i]
 }
 
 func ReplaceCnNumber(str string) string {
@@ -62,7 +67,7 @@ func ReplaceCnNumber(str string) string {
 	inMap := false
 	tmps := ""
 	i := 0
-	cnnums := map[string] int{}
+	cnnums := map[string]int{}
 	for _, v := range r {
 		if pos(ChinesNumberArr, string(v)) != -1 {
 			inMap = true
@@ -77,11 +82,11 @@ func ReplaceCnNumber(str string) string {
 		}
 	}
 	// 按长度重排大小
-	ms := ReMapSorter(cnnums)
-    sort.Sort(ms)
-	for _,cnnum := range ms {
-		cnint := CnStr2Int(cnnum.Key)
-		str = strings.Replace(str, cnnum.Key, strconv.Itoa(cnint), -1)
+	ms := SortMap(cnnums)
+
+	for cnnum, _ := range ms {
+		cnint := CnStr2Int(cnnum)
+		str = strings.Replace(str, cnnum, strconv.Itoa(cnint), -1)
 	}
 	inMap = inMap && false
 	return str

@@ -2,3 +2,5 @@
 *.a
 /pkg/windows_386/*.a
 /.settings
+
+/bin/main

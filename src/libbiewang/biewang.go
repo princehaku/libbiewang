@@ -3,6 +3,7 @@ package libbiewang
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -10,6 +11,8 @@ var StopWordsArr = []string{
 	"个",
 	"的",
 	"小",
+	"以",
+	"钟",
 }
 
 var MappingTimesMap = map[string]string{}
@@ -33,55 +36,86 @@ var FormatTimesMap = map[string]string{
 }
 
 type TimeMention struct {
-	second  int
-	minute  int
-	hour    int
-	day     int
-	month   int
-	year    int
+	second  string
+	minute  string
+	hour    string
+	day     string
+	month   string
+	year    string
 	defined int
 }
 
-type DurationMention struct {
-	second   int
-	minute   int
-	hour     int
-	day      int
-	month    int
-	year     int
-	timeType int
-}
-
 func parseSecond(str string, pt *TimeMention) {
-	var regxpPattern = regexp.MustCompile("(\\d*?)秒")
+	var regxpPattern = regexp.MustCompile("(\\d*?)秒(后?)")
 	m := regxpPattern.FindStringSubmatch(str)
-	fmt.Println(m)
+	if len(m) == 3 {
+		if m[2] == "后" {
+			pt.second = "+" + m[1]
+		}
+		if m[2] == "前" {
+			pt.second = "-" + m[1]
+		}
+		if m[2] == "" {
+			pt.second = "=" + m[1]
+		}
+	}
 }
 
-func parseMinute(str string, t *TimeMention) {
-	var regxpPattern = regexp.MustCompile("秒")
+func parseMinute(str string, pt *TimeMention) {
+	var regxpPattern = regexp.MustCompile("(\\d*?)分(后?)")
 	m := regxpPattern.FindStringSubmatch(str)
-	fmt.Println(m)
+	if len(m) == 3 {
+		if m[2] == "后" {
+			pt.minute = "+" + m[1]
+		}
+		if m[2] == "前" {
+			pt.minute = "-" + m[1]
+		}
+		if m[2] == "" {
+			pt.minute = "=" + m[1]
+		}
+	}
+}
+
+func parseHour(str string, pt *TimeMention) {
+	var regxpPattern = regexp.MustCompile("(\\d*?)时(后?)")
+	m := regxpPattern.FindStringSubmatch(str)
+	if len(m) == 3{
+		if m[2] == "后" {
+			pt.hour = "+" + m[1]
+		}
+		if m[2] == "前" {
+			pt.hour = "-" + m[1]
+		}
+		if m[2] == "" {
+			pt.minute = "+" + m[1]
+		}
+	}
+	regxpPattern = regexp.MustCompile("(\\d*?)点(后?)")
+	m = regxpPattern.FindStringSubmatch(str)
+	if len(m) == 3 {
+		intval, _ := strconv.ParseInt(m[1], 0, 32)
+		base_h := int(intval)
+		if strings.Contains(str, "下午") {
+			base_h = base_h + 12
+		}
+		pt.hour = "=" + strconv.Itoa(base_h)
+	}
+}
+
+func parseDay(str string, pt *TimeMention) {
 
 }
 
-func parseHour(str string, t *TimeMention) {
+func parseWeek(str string, pt *TimeMention) {
 
 }
 
-func parseDay(str string, t *TimeMention) {
+func parseMonth(str string, pt *TimeMention) {
 
 }
 
-func parseWeek(str string, t *TimeMention) {
-
-}
-
-func parseMonth(str string, t *TimeMention) {
-
-}
-
-func parseYear(str string, t *TimeMention) {
+func parseYear(str string, pt *TimeMention) {
 
 }
 
@@ -102,5 +136,7 @@ func Str2Memo(str string) {
 	pTime := new(TimeMention)
 	//pDuratime := new(DurationMention)
 	parseSecond(str, pTime)
+	parseMinute(str, pTime)
+	parseHour(str, pTime)
 
 }
