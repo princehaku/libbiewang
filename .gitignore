@@ -1,2 +1,4 @@
-/bin/*.exe
+*.exe
+*.a
 /pkg/windows_386/*.a
+/.settings

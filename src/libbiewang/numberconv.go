@@ -1,4 +1,4 @@
-package biewang
+package libbiewang
 
 import (
 	"regexp"
