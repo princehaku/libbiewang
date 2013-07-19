@@ -140,13 +140,16 @@ func parseWeek(str string, pt *TimeMention) {
 	m := regxpPattern.FindStringSubmatch(str)
 	if len(m) >= 3 {
 		if m[2] == "后" {
-			pt.day = "+" + m[1]
+			temp_i, _ := strconv.Atoi(m[1])
+			pt.day = "+" + strconv.Itoa(temp_i*7)
 		}
 		if m[2] == "前" {
-			pt.day = "-" + m[1]
+			temp_i, _ := strconv.Atoi(m[1])
+			pt.day = "-" + strconv.Itoa(temp_i*7)
 		}
 		if m[2] == "" {
-			pt.day = "+" + m[1]
+			temp_i, _ := strconv.Atoi(m[1])
+			pt.day = "=" + strconv.Itoa(temp_i*7)
 		}
 	}
 
@@ -186,5 +189,6 @@ func Str2Memo(str string) {
 	parseMinute(str, pTime)
 	parseHour(str, pTime)
 	parseDay(str, pTime)
+	parseWeek(str, pTime)
 	fmt.Println(pTime)
 }
