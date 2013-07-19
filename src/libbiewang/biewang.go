@@ -107,6 +107,9 @@ func parseHour(str string, pt *TimeMention) {
 		if strings.Contains(str, "下午") {
 			base_h = base_h + 12
 		}
+		if strings.Contains(str, "晚上") {
+			base_h = base_h + 12
+		}
 		pt.hour = "=" + strconv.Itoa(base_h)
 	}
 }
@@ -133,6 +136,19 @@ func parseDay(str string, pt *TimeMention) {
 }
 
 func parseWeek(str string, pt *TimeMention) {
+	var regxpPattern = regexp.MustCompile("(\\d*?)周(后?)")
+	m := regxpPattern.FindStringSubmatch(str)
+	if len(m) >= 3 {
+		if m[2] == "后" {
+			pt.day = "+" + m[1]
+		}
+		if m[2] == "前" {
+			pt.day = "-" + m[1]
+		}
+		if m[2] == "" {
+			pt.day = "+" + m[1]
+		}
+	}
 
 }
 
