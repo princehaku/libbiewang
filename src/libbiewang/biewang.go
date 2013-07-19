@@ -45,10 +45,18 @@ type TimeMention struct {
 	defined int
 }
 
+func (t *TimeMention) String() string {
+	s := " Minute:" + t.minute + " Second:" + t.second
+	s += " Day:" + t.day + " Hour:" + t.hour
+	s += " Year:" + t.year + " Month:" + t.month
+	
+	return s
+}
+
 func parseSecond(str string, pt *TimeMention) {
 	var regxpPattern = regexp.MustCompile("(\\d*?)秒(后?)")
 	m := regxpPattern.FindStringSubmatch(str)
-	if len(m) == 3 {
+	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.second = "+" + m[1]
 		}
@@ -64,7 +72,7 @@ func parseSecond(str string, pt *TimeMention) {
 func parseMinute(str string, pt *TimeMention) {
 	var regxpPattern = regexp.MustCompile("(\\d*?)分(后?)")
 	m := regxpPattern.FindStringSubmatch(str)
-	if len(m) == 3 {
+	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.minute = "+" + m[1]
 		}
@@ -80,7 +88,7 @@ func parseMinute(str string, pt *TimeMention) {
 func parseHour(str string, pt *TimeMention) {
 	var regxpPattern = regexp.MustCompile("(\\d*?)时(后?)")
 	m := regxpPattern.FindStringSubmatch(str)
-	if len(m) == 3 {
+	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.hour = "+" + m[1]
 		}
@@ -93,7 +101,7 @@ func parseHour(str string, pt *TimeMention) {
 	}
 	regxpPattern = regexp.MustCompile("(\\d*?)点(后?)")
 	m = regxpPattern.FindStringSubmatch(str)
-	if len(m) == 3 {
+	if len(m) >= 3 {
 		intval, _ := strconv.ParseInt(m[1], 0, 32)
 		base_h := int(intval)
 		if strings.Contains(str, "下午") {
@@ -106,7 +114,7 @@ func parseHour(str string, pt *TimeMention) {
 func parseDay(str string, pt *TimeMention) {
 	var regxpPattern = regexp.MustCompile("(\\d*?)天(后?)")
 	m := regxpPattern.FindStringSubmatch(str)
-	if len(m) == 3 {
+	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.day = "+" + m[1]
 		}
@@ -136,6 +144,11 @@ func parseYear(str string, pt *TimeMention) {
 
 }
 
+func ReplaceEnTime(str string) string {
+
+	return str
+}
+
 func Str2Memo(str string) {
 	// 清除一些终止词
 	for _, w := range StopWordsArr {
@@ -147,6 +160,7 @@ func Str2Memo(str string) {
 	}
 	// 把中文描述的数字全部转成英文
 	str = ReplaceCnNumber(str)
+	str = ReplaceEnTime(str)
 
 	// 然后从秒开始..挨个去解析
 	fmt.Println(str)

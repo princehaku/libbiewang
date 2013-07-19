@@ -83,7 +83,6 @@ func ReplaceCnNumber(str string) string {
 	}
 	// 按长度重排大小
 	ms := SortMap(cnnums)
-
 	for cnnum, _ := range ms {
 		cnint := CnStr2Int(cnnum)
 		str = strings.Replace(str, cnnum, strconv.Itoa(cnint), -1)
@@ -113,8 +112,7 @@ func CnStr2Int(cnstr string) int {
 			// 这里的处理是为了规避零九的情况
 			runeStr := []rune(m[1])
 			if len(runeStr) != 1 {
-				i := len(runeStr) - 1
-				dst = string(runeStr[i])
+				dst = strings.Replace(dst,"零","",-1)
 			}
 			s = ChinesNumberMap[dst]
 			break
