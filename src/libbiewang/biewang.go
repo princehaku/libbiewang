@@ -80,7 +80,7 @@ func parseMinute(str string, pt *TimeMention) {
 func parseHour(str string, pt *TimeMention) {
 	var regxpPattern = regexp.MustCompile("(\\d*?)时(后?)")
 	m := regxpPattern.FindStringSubmatch(str)
-	if len(m) == 3{
+	if len(m) == 3 {
 		if m[2] == "后" {
 			pt.hour = "+" + m[1]
 		}
@@ -88,7 +88,7 @@ func parseHour(str string, pt *TimeMention) {
 			pt.hour = "-" + m[1]
 		}
 		if m[2] == "" {
-			pt.minute = "+" + m[1]
+			pt.hour = "+" + m[1]
 		}
 	}
 	regxpPattern = regexp.MustCompile("(\\d*?)点(后?)")
@@ -104,7 +104,24 @@ func parseHour(str string, pt *TimeMention) {
 }
 
 func parseDay(str string, pt *TimeMention) {
-
+	var regxpPattern = regexp.MustCompile("(\\d*?)天(后?)")
+	m := regxpPattern.FindStringSubmatch(str)
+	if len(m) == 3 {
+		if m[2] == "后" {
+			pt.day = "+" + m[1]
+		}
+		if m[2] == "前" {
+			pt.day = "-" + m[1]
+		}
+		if m[2] == "" {
+			pt.day = "+" + m[1]
+		}
+	}
+	regxpPattern = regexp.MustCompile("(\\d*?)号")
+	m = regxpPattern.FindStringSubmatch(str)
+	if len(m) == 2 {
+		pt.day = "=" + m[1]
+	}
 }
 
 func parseWeek(str string, pt *TimeMention) {
@@ -138,5 +155,6 @@ func Str2Memo(str string) {
 	parseSecond(str, pTime)
 	parseMinute(str, pTime)
 	parseHour(str, pTime)
-
+	parseDay(str, pTime)
+	fmt.Println(pTime)
 }
