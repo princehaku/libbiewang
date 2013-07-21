@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var StopWordsArr = []string{
@@ -23,13 +24,16 @@ var FormatTimesMap = map[string]string{
 	"昨天":  "1天前",
 	"半天":  "12小时后",
 	"明天":  "1天后",
-	"两天":  "2天后",
+	"两天":  "2天",
 	"后天":  "2天后",
 	"大后天": "3天后",
-	"下周":  "1周后星期",
+	"上周":  "1周前周",
+	"下周":  "1周后周",
 	"下下周": "2周后",
 	"上月":  "1月前",
 	"下月":  "1月后",
+	"周日" : "周7",
+	"星期天" : "周7",
 	"星期":  "周",
 	"半":   "30分",
 	"一刻":  "15分",
@@ -49,13 +53,20 @@ func (t *TimeMention) String() string {
 	s := " Minute:" + t.minute + " Second:" + t.second
 	s += " Day:" + t.day + " Hour:" + t.hour
 	s += " Year:" + t.year + " Month:" + t.month
-	
+
 	return s
 }
-
-func parseSecond(str string, pt *TimeMention) {
-	var regxpPattern = regexp.MustCompile("(\\d*?)秒(后?)")
+func MatchAndReplace(str string, pattern string) (string, []string) {
+	var regxpPattern = regexp.MustCompile(pattern)
 	m := regxpPattern.FindStringSubmatch(str)
+	if len(m) > 1 {
+		str = strings.Replace(str, m[0], "", 1)
+		fmt.Println(str)
+	}
+	return str, m
+}
+func ParseSecond(str string, pt *TimeMention) string {
+	str, m := MatchAndReplace(str, "(\\d+)秒([前后]?)")
 	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.second = "+" + m[1]
@@ -67,11 +78,11 @@ func parseSecond(str string, pt *TimeMention) {
 			pt.second = "=" + m[1]
 		}
 	}
+	return str
 }
 
-func parseMinute(str string, pt *TimeMention) {
-	var regxpPattern = regexp.MustCompile("(\\d*?)分(后?)")
-	m := regxpPattern.FindStringSubmatch(str)
+func ParseMinute(str string, pt *TimeMention) string {
+	str, m := MatchAndReplace(str, "(\\d+)分([前后]?)")
 	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.minute = "+" + m[1]
@@ -83,11 +94,11 @@ func parseMinute(str string, pt *TimeMention) {
 			pt.minute = "=" + m[1]
 		}
 	}
+	return str
 }
 
-func parseHour(str string, pt *TimeMention) {
-	var regxpPattern = regexp.MustCompile("(\\d*?)时(后?)")
-	m := regxpPattern.FindStringSubmatch(str)
+func ParseHour(str string, pt *TimeMention) string {
+	str, m := MatchAndReplace(str, "(\\d+)时([前后]?)")
 	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.hour = "+" + m[1]
@@ -99,24 +110,28 @@ func parseHour(str string, pt *TimeMention) {
 			pt.hour = "+" + m[1]
 		}
 	}
-	regxpPattern = regexp.MustCompile("(\\d*?)点(后?)")
-	m = regxpPattern.FindStringSubmatch(str)
-	if len(m) >= 3 {
+	str, m = MatchAndReplace(str, "(\\d+)点")
+	if len(m) >= 2 {
 		intval, _ := strconv.ParseInt(m[1], 0, 32)
 		base_h := int(intval)
+		if strings.Contains(str, "早上") {
+			str = strings.Replace(str, "早上", "", 1)
+		}
 		if strings.Contains(str, "下午") {
 			base_h = base_h + 12
+			str = strings.Replace(str, "下午", "", 1)
 		}
 		if strings.Contains(str, "晚上") {
 			base_h = base_h + 12
+			str = strings.Replace(str, "晚上", "", 1)
 		}
 		pt.hour = "=" + strconv.Itoa(base_h)
 	}
+	return str
 }
 
-func parseDay(str string, pt *TimeMention) {
-	var regxpPattern = regexp.MustCompile("(\\d*?)天(后?)")
-	m := regxpPattern.FindStringSubmatch(str)
+func ParseDay(str string, pt *TimeMention) string {
+	str, m := MatchAndReplace(str, "(\\d+)天([前后]?)")
 	if len(m) >= 3 {
 		if m[2] == "后" {
 			pt.day = "+" + m[1]
@@ -128,16 +143,16 @@ func parseDay(str string, pt *TimeMention) {
 			pt.day = "+" + m[1]
 		}
 	}
-	regxpPattern = regexp.MustCompile("(\\d*?)号")
-	m = regxpPattern.FindStringSubmatch(str)
+	str, m = MatchAndReplace(str, "(\\d+)号")
 	if len(m) == 2 {
 		pt.day = "=" + m[1]
 	}
+	return str
 }
 
-func parseWeek(str string, pt *TimeMention) {
-	var regxpPattern = regexp.MustCompile("(\\d*?)周(后?)")
-	m := regxpPattern.FindStringSubmatch(str)
+func ParseWeek(str string, pt *TimeMention) string {
+	//N周
+	str, m := MatchAndReplace(str, "(\\d+)周([前后]?)")
 	if len(m) >= 3 {
 		if m[2] == "后" {
 			temp_i, _ := strconv.Atoi(m[1])
@@ -152,7 +167,27 @@ func parseWeek(str string, pt *TimeMention) {
 			pt.day = "=" + strconv.Itoa(temp_i*7)
 		}
 	}
+	// 周1-六
+	str, m = MatchAndReplace(str, "周(\\d+)")
+	if len(m) >= 2 {
+		temp_i, _ := strconv.Atoi(m[1])
+		temp_i += 0
+		t := time.Now()
+		// 需要把weekday的0转成7
+		weekday := int(t.Weekday())
+		if weekday == 0 {
+			weekday = 7
+		}
+		t_new := temp_i - weekday
+		if pt.day != "" {
+			temp_i, _ := strconv.Atoi(pt.day)
+			pt.day = strconv.Itoa(temp_i + t_new)
+		} else {
+			pt.day = strconv.Itoa(t_new)
+		}
+	}
 
+	return str
 }
 
 func parseMonth(str string, pt *TimeMention) {
@@ -185,10 +220,10 @@ func Str2Memo(str string) {
 	fmt.Println(str)
 	pTime := new(TimeMention)
 	//pDuratime := new(DurationMention)
-	parseSecond(str, pTime)
-	parseMinute(str, pTime)
-	parseHour(str, pTime)
-	parseDay(str, pTime)
-	parseWeek(str, pTime)
+	str = ParseSecond(str, pTime)
+	str = ParseMinute(str, pTime)
+	str = ParseHour(str, pTime)
+	str = ParseDay(str, pTime)
+	str = ParseWeek(str, pTime)
 	fmt.Println(pTime)
 }

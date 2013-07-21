@@ -36,18 +36,13 @@ type Item struct {
 	Val int
 }
 
-func SortMap(m map[string]int) map[string]int {
+func SortMap(m map[string]int) []Item {
 	ms := make(SortedList, 0, len(m))
-
 	for k, v := range m {
 		ms = append(ms, Item{k, v})
 	}
 	sort.Sort(ms)
-	mx := map[string]int{}
-	for _, i := range ms {
-		mx[i.Key] = i.Val
-	}
-	return mx
+	return ms
 }
 
 func (ms SortedList) Len() int {
@@ -83,9 +78,9 @@ func ReplaceCnNumber(str string) string {
 	}
 	// 按长度重排大小
 	ms := SortMap(cnnums)
-	for cnnum, _ := range ms {
-		cnint := CnStr2Int(cnnum)
-		str = strings.Replace(str, cnnum, strconv.Itoa(cnint), -1)
+	for _, entry := range ms {
+		cnint := CnStr2Int(entry.Key)
+		str = strings.Replace(str, entry.Key, strconv.Itoa(cnint), -1)
 	}
 	inMap = inMap && false
 	return str
@@ -112,7 +107,7 @@ func CnStr2Int(cnstr string) int {
 			// 这里的处理是为了规避零九的情况
 			runeStr := []rune(m[1])
 			if len(runeStr) != 1 {
-				dst = strings.Replace(dst,"零","",-1)
+				dst = strings.Replace(dst, "零", "", -1)
 			}
 			s = ChinesNumberMap[dst]
 			break
