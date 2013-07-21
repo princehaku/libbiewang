@@ -14,6 +14,7 @@ var StopWordsArr = []string{
 	"小",
 	"以",
 	"钟",
+	"今天",
 }
 
 var MappingTimesMap = map[string]string{}
@@ -30,11 +31,13 @@ var FormatTimesMap = map[string]string{
 	"上周":  "1周前周",
 	"下周":  "1周后周",
 	"下下周": "2周后",
+	"周日":  "周7",
+	"星期天": "周7",
+	"星期":  "周",
 	"上月":  "1月前",
 	"下月":  "1月后",
-	"周日" : "周7",
-	"星期天" : "周7",
-	"星期":  "周",
+	"去年":  "1年前",
+	"明年":  "1年后",
 	"半":   "30分",
 	"一刻":  "15分",
 }
@@ -190,12 +193,40 @@ func ParseWeek(str string, pt *TimeMention) string {
 	return str
 }
 
-func parseMonth(str string, pt *TimeMention) {
+func ParseMonth(str string, pt *TimeMention) string {
+	//N月
+	str, m := MatchAndReplace(str, "(\\d+)月([前后]?)")
+	if len(m) >= 3 {
+		if m[2] == "后" {
+			pt.month = "+" + m[1]
+		}
+		if m[2] == "前" {
+			pt.month = "-" + m[1]
+		}
+		if m[2] == "" {
+			pt.month = "=" + m[1]
+		}
+	}
 
+	return str
 }
 
-func parseYear(str string, pt *TimeMention) {
+func ParseYear(str string, pt *TimeMention) string {
+	//N年
+	str, m := MatchAndReplace(str, "(\\d+)年([前后]?)")
+	if len(m) >= 3 {
+		if m[2] == "后" {
+			pt.year = "+" + m[1]
+		}
+		if m[2] == "前" {
+			pt.year = "-" + m[1]
+		}
+		if m[2] == "" {
+			pt.year = "=" + m[1]
+		}
+	}
 
+	return str
 }
 
 func ReplaceEnTime(str string) string {
@@ -225,5 +256,7 @@ func Str2Memo(str string) {
 	str = ParseHour(str, pTime)
 	str = ParseDay(str, pTime)
 	str = ParseWeek(str, pTime)
+	str = ParseMonth(str, pTime)
+	str = ParseYear(str, pTime)
 	fmt.Println(pTime)
 }

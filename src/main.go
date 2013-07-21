@@ -5,6 +5,7 @@ import (
 )
 
 func main() {
+YearTest()
 }
 
 func HourTest() {
@@ -25,4 +26,9 @@ func WeekTest() {
 	libbiewang.Str2Memo("下周一晚上十点半")
 	libbiewang.Str2Memo("星期五晚上十点半")
 	libbiewang.Str2Memo("星期天晚上十点半")
+}
+
+func YearTest() {
+	libbiewang.Str2Memo("2014年晚上十点半")
+	libbiewang.Str2Memo("明年今天晚上十点半")
 }
