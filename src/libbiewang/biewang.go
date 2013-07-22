@@ -19,27 +19,27 @@ var StopWordsArr = []string{
 
 var MappingTimesMap = map[string]string{}
 
-var FormatTimesMap = map[string]string{
-	"大前天": "3天前",
-	"前天":  "2天前",
-	"昨天":  "1天前",
-	"半天":  "12小时后",
-	"明天":  "1天后",
-	"两天":  "2天",
-	"后天":  "2天后",
-	"大后天": "3天后",
-	"上周":  "1周前周",
-	"下周":  "1周后周",
-	"下下周": "2周后",
-	"周日":  "周7",
-	"星期天": "周7",
-	"星期":  "周",
-	"上月":  "1月前",
-	"下月":  "1月后",
-	"去年":  "1年前",
-	"明年":  "1年后",
-	"半":   "30分",
-	"一刻":  "15分",
+var FormatTimesMap = [][]string{
+	[]string{"大前天", "3天前"},
+	[]string{"前天", "2天前"},
+	[]string{"昨天", "1天前"},
+	[]string{"半天", "12小时后"},
+	[]string{"明天", "1天后"},
+	[]string{"两天", "2天"},
+	[]string{"后天", "2天后"},
+	[]string{"大后天", "3天后"},
+	[]string{"上周", "1周前周"},
+	[]string{"下周", "1周后周"},
+	[]string{"下下周", "2周后"},
+	[]string{"周日", "周7"},
+	[]string{"星期天", "周7"},
+	[]string{"星期", "周"},
+	[]string{"上月", "1月前"},
+	[]string{"下月", "1月后"},
+	[]string{"去年", "1年前"},
+	[]string{"明年", "1年后"},
+	[]string{"半", "30分"},
+	[]string{"一刻", "15分"},
 }
 
 type TimeMention struct {
@@ -54,11 +54,55 @@ type TimeMention struct {
 
 func (t *TimeMention) String() string {
 	s := " Minute:" + t.minute + " Second:" + t.second
-	s += " Day:" + t.day + " Hour:" + t.hour
-	s += " Year:" + t.year + " Month:" + t.month
-
+	s += " Hour:" + t.hour + " Day:" + t.day
+	s += " Month:" + t.month + " Year:" + t.year
 	return s
 }
+
+// 转换成系统可用的Time对象
+func (t *TimeMention) Time() time.Time {
+	time := time.Now()
+	sec := time.Second()
+	min := time.Minute()
+	hour := time.Hour()
+	day := time.Day()
+	month := time.Month()
+	year := time.Year()
+	duration := 0
+	duration += 0
+	sec, duration = ReParserTime(t.second, 1, sec, duration)
+	min, duration = ReParserTime(t.minute, 60, min, duration)
+	tc := time.Date(year, month, day, hour, min, sec, 0, time.UTC)
+	return tc
+}
+
+func ReParserTime(timeSpec string, square int, resignment int, duration int) (int, int) {
+	opt, qua := SplitTime(timeSpec)
+	switch opt {
+	case "+":
+		duration += qua * square
+		break
+	case "-":
+		duration -= qua * square
+		break
+	case "=":
+		resignment = qua
+		break
+	}
+	return resignment, duration
+}
+
+func SplitTime(str string) (string, int) {
+	opt := "@"
+	qua := 0
+	if len(str) > 0 {
+		opt = strings.Split(str, "")[0]
+		qua_s := strings.TrimLeft(str, opt)
+		qua, _ = strconv.Atoi(qua_s)
+	}
+	return opt, qua
+}
+
 func MatchAndReplace(str string, pattern string) (string, []string) {
 	var regxpPattern = regexp.MustCompile(pattern)
 	m := regxpPattern.FindStringSubmatch(str)
@@ -240,8 +284,8 @@ func Str2Memo(str string) {
 		str = strings.Replace(str, w, "", -1)
 	}
 	// 转义一些中文词，规整化
-	for f, t := range FormatTimesMap {
-		str = strings.Replace(str, f, t, -1)
+	for _, t := range FormatTimesMap {
+		str = strings.Replace(str, t[0], t[1], -1)
 	}
 	// 把中文描述的数字全部转成英文
 	str = ReplaceCnNumber(str)
@@ -259,4 +303,5 @@ func Str2Memo(str string) {
 	str = ParseMonth(str, pTime)
 	str = ParseYear(str, pTime)
 	fmt.Println(pTime)
+	fmt.Println(pTime.Time())
 }
