@@ -61,23 +61,37 @@ func (t *TimeMention) String() string {
 
 // 转换成系统可用的Time对象
 func (t *TimeMention) Time() time.Time {
-	time := time.Now()
-	sec := time.Second()
-	min := time.Minute()
-	hour := time.Hour()
-	day := time.Day()
-	month := time.Month()
-	year := time.Year()
+	now := time.Now()
+	sec := now.Second()
+	min := now.Minute()
+	hour := now.Hour()
+	day := now.Day()
+	month := now.Month()
+	month_i := int(month)
+	year := now.Year()
 	duration := 0
 	duration += 0
-	sec, duration = ReParserTime(t.second, 1, sec, duration)
-	min, duration = ReParserTime(t.minute, 60, min, duration)
-	tc := time.Date(year, month, day, hour, min, sec, 0, time.UTC)
+	lastopt := ""
+	sec, lastopt, duration = ReParserTime(t.second, lastopt, 1, sec, duration)
+	min, lastopt, duration = ReParserTime(t.minute, lastopt, 60, min, duration)
+	hour, lastopt, duration = ReParserTime(t.hour, lastopt, 3600, hour, duration)
+
+	duration_day := 0
+	duration_month := 0
+	duration_year := 0
+	day, lastopt, duration_day = ReParserTime(t.day, "", 1, day, duration_day)
+	month_i, lastopt, duration_month = ReParserTime(t.month, "", 1, month_i, duration_month)
+	year, lastopt, duration_year = ReParserTime(t.year, "", 1, year, duration_year)
+
+	tc := time.Date(year, time.Month(month_i), day, hour, min, sec, 0, time.UTC)
+	tc = tc.Add(time.Duration(duration) * time.Second)
+	tc = tc.AddDate(duration_year, duration_month, duration_day)
 	return tc
 }
 
-func ReParserTime(timeSpec string, square int, resignment int, duration int) (int, int) {
+func ReParserTime(timeSpec string, lastopt string, square int, resignment int, duration int) (int, string, int) {
 	opt, qua := SplitTime(timeSpec)
+
 	switch opt {
 	case "+":
 		duration += qua * square
@@ -86,10 +100,15 @@ func ReParserTime(timeSpec string, square int, resignment int, duration int) (in
 		duration -= qua * square
 		break
 	case "=":
-		resignment = qua
+		if lastopt == "+" {
+			opt = "+"
+			duration += qua * square
+		} else {
+			resignment = qua
+		}
 		break
 	}
-	return resignment, duration
+	return resignment, opt, duration
 }
 
 func SplitTime(str string) (string, int) {
@@ -231,6 +250,9 @@ func ParseWeek(str string, pt *TimeMention) string {
 			pt.day = strconv.Itoa(temp_i + t_new)
 		} else {
 			pt.day = strconv.Itoa(t_new)
+		}
+		if pt.day != "0" && !strings.HasSuffix(pt.day, "+") {
+			pt.day = "+" + pt.day
 		}
 	}
 

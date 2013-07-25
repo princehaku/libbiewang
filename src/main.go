@@ -35,6 +35,7 @@ func WeekTest() {
 
 func MonthTest() {
 	libbiewang.Str2Memo("下个月5号")
+	libbiewang.Str2Memo("9月23号")
 }
 
 func YearTest() {
