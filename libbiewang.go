@@ -1,7 +1,7 @@
 package libbiewang
 
 import (
-	"fmt"
+	//"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -127,7 +127,7 @@ func MatchAndReplace(str string, pattern string) (string, []string) {
 	m := regxpPattern.FindStringSubmatch(str)
 	if len(m) > 1 {
 		str = strings.Replace(str, m[0], "", 1)
-		fmt.Println(str)
+		//fmt.Println(str)
 	}
 	return str, m
 }
@@ -300,7 +300,7 @@ func ReplaceEnTime(str string) string {
 	return str
 }
 
-func Str2Memo(str string) {
+func Str2Memo(str string) *TimeMention {
 	// 清除一些终止词
 	for _, w := range StopWordsArr {
 		str = strings.Replace(str, w, "", -1)
@@ -314,7 +314,7 @@ func Str2Memo(str string) {
 	str = ReplaceEnTime(str)
 
 	// 然后从秒开始..挨个去解析
-	fmt.Println(str)
+	//fmt.Println(str)
 	pTime := new(TimeMention)
 	//pDuratime := new(DurationMention)
 	str = ParseSecond(str, pTime)
@@ -324,6 +324,5 @@ func Str2Memo(str string) {
 	str = ParseWeek(str, pTime)
 	str = ParseMonth(str, pTime)
 	str = ParseYear(str, pTime)
-	fmt.Println(pTime)
-	fmt.Println(pTime.Time())
+	return pTime;
 }
